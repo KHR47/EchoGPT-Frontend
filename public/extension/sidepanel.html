@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EchoGPT Side Panel</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+
+  <header class="extension-header">
+    <div class="brand-section">
+      <img src="icons/icon48.png" alt="EchoGPT" class="brand-logo">
+      <span>EchoGPT</span>
+      <span class="brand-badge">v2.0</span>
+    </div>
+
+    <button type="button" id="modelPillBtn" class="model-pill-btn" title="Switch AI model" aria-haspopup="dialog" aria-label="Switch AI model">
+      <span class="status-dot"></span>
+      <span id="activeModelLabel">Claude 3.5</span>
+      <span style="font-size: 8px;" aria-hidden="true">▾</span>
+    </button>
+
+    <div class="header-actions">
+      <button type="button" id="newChatBtn" class="icon-btn" title="New Conversation" aria-label="New Conversation">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
+
+      <button type="button" id="historyBtn" class="icon-btn" title="History" aria-label="Conversation History">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      </button>
+
+      <button type="button" id="themeToggleBtn" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+
+      <button type="button" id="settingsBtn" class="icon-btn" title="Extension Settings" aria-label="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="context-hero-card" id="contextHeroCard" aria-label="Context grounding panel">
+
+  </section>
+
+  <main class="chat-canvas" id="chatCanvas" role="log" aria-label="Chat messages" aria-live="polite">
+
+  </main>
+
+  <div id="errorBanner" class="error-banner" role="alert" style="display: none; margin: 0 12px 6px;">
+    <span id="errorMessage">Model gateway timed out.</span>
+    <button type="button" id="retryErrorBtn" style="background:transparent;border:none;color:inherit;font-weight:bold;cursor:pointer;">Retry</button>
+  </div>
+
+  <div class="composer-container">
+    <div class="composer-box">
+
+      <div class="composer-context-indicator" id="composerContextIndicator">
+        <div class="composer-ctx-left">
+          <span class="composer-ctx-dot" id="composerCtxDot" aria-hidden="true"></span>
+          <span class="composer-ctx-intent" id="composerCtxIntent">Will send with prompt</span>
+          <span class="composer-ctx-sep" aria-hidden="true">·</span>
+          <span class="composer-ctx-source" id="composerCtxSource">react.dev</span>
+        </div>
+        <div class="composer-ctx-right">
+          <span class="composer-ctx-label" id="composerCtxLabel" title="Click to view full context">📄 React Documentation</span>
+          <button type="button" class="composer-ctx-action" id="composerCtxInspectBtn" title="Inspect context snippet" aria-label="Preview full context details">Preview</button>
+          <button type="button" class="composer-ctx-action remove" id="composerCtxRemoveBtn" title="Remove context from this prompt" aria-label="Remove context from this prompt">✕</button>
+        </div>
+      </div>
+
+      <div class="composer-detached-banner" id="composerDetachedBanner" style="display: none;">
+        <span>No context attached</span>
+        <button type="button" id="composerQuickAttachBtn" class="composer-quick-attach-btn">+ Attach Page</button>
+      </div>
+
+      <textarea id="promptInput" rows="1" aria-label="Ask Claude anything, or select an action" placeholder="Ask Claude anything, or select an action..."></textarea>
+
+      <div class="composer-bottom">
+        <div class="composer-left">
+          <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">
+            Shift+Enter newline
+          </span>
+        </div>
+
+        <button type="button" class="send-btn" id="sendBtn" title="Send message" aria-label="Send message" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay-panel" id="contextInspectPanel" role="dialog" aria-modal="true" aria-label="Attached Context Details">
+    <div class="panel-header">
+      <span id="inspectPanelHeader">Attached Context Details</span>
+      <button type="button" class="icon-btn" id="closeInspectPanelBtn" aria-label="Close context details panel">✕</button>
+    </div>
+    <div class="panel-content" style="display:flex;flex-direction:column;gap:12px;font-size:11.5px;">
+      <div class="inspect-meta-box">
+        <div class="inspect-meta-tag" id="inspectMetaTag">CURRENT PAGE</div>
+        <div class="inspect-meta-title" id="inspectMetaTitle">React Documentation</div>
+        <div class="inspect-meta-url" id="inspectMetaUrl">https://react.dev/learn</div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.05em;margin-bottom:6px;">
+          Captured Grounding Content
+        </div>
+        <div class="inspect-text-box" id="inspectFullTextBox"></div>
+      </div>
+
+      <div class="inspect-footer">
+        <div class="inspect-token-stat" id="inspectTokenStat">
+          <span class="status-dot"></span>
+          <span>Active in next model prompt (~180 tokens)</span>
+        </div>
+        <button type="button" class="context-btn-small" id="inspectDetachBtn" style="color:var(--error);border-color:rgba(239,68,68,0.35);">
+          Detach Context
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay-panel" id="modelPanel" role="dialog" aria-modal="true" aria-label="Choose AI Model">
+    <div class="panel-header">
+      <span>Choose AI Model</span>
+      <button type="button" class="icon-btn" id="closeModelPanelBtn" aria-label="Close model selection panel">✕</button>
+    </div>
+    <div class="panel-content" id="modelListContainer">
+
+    </div>
+  </div>
+
+  <div class="overlay-panel" id="historyPanel" role="dialog" aria-modal="true" aria-label="Conversation History">
+    <div class="panel-header">
+      <span>Conversation History</span>
+      <button type="button" class="icon-btn" id="closeHistoryPanelBtn" aria-label="Close conversation history panel">✕</button>
+    </div>
+    <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-subtle);">
+      <input type="text" id="historySearchInput" aria-label="Search conversation history" placeholder="Search chats..." style="width:100%;padding:6px 10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-main);font-size:11px;">
+    </div>
+    <div class="panel-content" id="historyListContainer">
+
+    </div>
+  </div>
+
+  <div class="overlay-panel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="Extension Settings">
+    <div class="panel-header">
+      <span>Extension Settings</span>
+      <button type="button" class="icon-btn" id="closeSettingsPanelBtn" aria-label="Close settings panel">✕</button>
+    </div>
+    <div class="panel-content" style="display:flex;flex-direction:column;gap:14px;font-size:11.5px;">
+      <div>
+        <label style="font-weight:bold;display:block;margin-bottom:6px;">Appearance</label>
+        <div style="display:flex;gap:6px;">
+          <button type="button" id="themeDarkBtn" class="context-btn-small" style="flex:1;padding:8px;">Dark Void</button>
+          <button type="button" id="themeLightBtn" class="context-btn-small" style="flex:1;padding:8px;">Lilac Light</button>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border-subtle);padding-top:10px;">
+        <label style="font-weight:bold;display:block;margin-bottom:4px;">Context Simulation Mode</label>
+        <p style="color:var(--text-muted);font-size:10.5px;margin-bottom:8px;">Switch context types for instant demonstration:</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button type="button" class="context-btn-small demo-ctx-btn" data-ctx="page" style="text-align:left;padding:7px 10px;">
+            📄 Current Page: React Documentation
+          </button>
+          <button type="button" class="context-btn-small demo-ctx-btn" data-ctx="selection1" style="text-align:left;padding:7px 10px;">
+            ✂️ Selection: &quot;React is a JavaScript library...&quot;
+          </button>
+          <button type="button" class="context-btn-small demo-ctx-btn" data-ctx="selection2" style="text-align:left;padding:7px 10px;">
+            ✂️ Selection: &quot;Hooks let you use state...&quot;
+          </button>
+          <button type="button" class="context-btn-small demo-ctx-btn" data-ctx="none" style="text-align:left;padding:7px 10px;color:var(--text-muted);">
+            🚫 Detached (No context)
+          </button>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border-subtle);padding-top:10px;">
+        <label style="font-weight:bold;display:block;margin-bottom:4px;">Webpage Context</label>
+        <p style="color:var(--text-muted);font-size:10.5px;margin-bottom:6px;">Automatically detect active tab title & DOM content.</p>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="autoContextCheckbox" checked>
+          <span>Enable ambient page grounding</span>
+        </label>
+      </div>
+
+      <div style="border-top:1px solid var(--border-subtle);padding-top:10px;">
+        <label style="font-weight:bold;display:block;margin-bottom:4px;">Selection Capture</label>
+        <p style="color:var(--text-muted);font-size:10.5px;margin-bottom:6px;">Listen to browser text highlights.</p>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="autoSelectionCheckbox" checked>
+          <span>Auto-suggest selected text</span>
+        </label>
+      </div>
+
+      <div style="border-top:1px solid var(--border-subtle);padding-top:12px;margin-top:auto;">
+        <a href="https://echogpt.live/app" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-main);text-decoration:none;font-weight:600;">
+          <span>Open Full EchoGPT Web App</span>
+          <span style="font-size:10px;">↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
